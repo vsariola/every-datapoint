@@ -132,6 +132,7 @@ float plane(vec3 p) {
     return ret;
 }
 
+
 float cloudmap(vec3 p) {    
     float a =pow(rnoise(p/12.),2.),rho=a-p.y*.1-smoothstep(5.,-1.,p.y);
     for (int i=0;i<3;i++) {
@@ -214,32 +215,6 @@ float stars(vec3 d) {
     return ret;
 }
 
-void cloudmarch(vec3 p,vec3 d,float tmax) {
-    float t,tnew,dt,den,prev,cur;	 
-    vec3 porig = p;
-    p.z += syncs[ROW]*.02+syncs[CLOUD_OFFSET];
-    for (int i=0;i<200&&t<tmax&&sum.a<.99;i++) {                        
-        tnew = min(t+max(.2,0.01*t),tmax);        
-        dt = tnew-t;
-        t = tnew;
-        p += d*dt;        
-        den = cloudmap(p);       
-        if (den > 0.) {                      
-           float w = min(den*exp2(-.1*t)*dt*7.,1.);           
-           sum += vec4((vec3(.04,.04,.06)+ clamp(den - cloudmap(p+MOONDIR), 0.,1. )*.5)*w,w)*(1.-sum.a);
-        }                
-        vec3 q = porig-PLANEPOS;                       
-        q *= 30.;   
-        q.x = abs(q.x);    
-        q = motors(q);       
-        //float PROPELLOR = (length(vec2(max(length(q.xy+sin(syncs[ROW]*100.+q.x))-2.2,0.),q.z-4.6))-.1)/30.;
-        //float a = clamp(PROPELLOR*6.,0.,1.);
-        //sum.w += a*(1.-sum.a);
-        //sum.a = mix(1.,sum.a);                       
-    }        
-}
-
-
 vec3 bg(vec3 d) {
     float m = max(dot(d,MOONDIR),0.);                
     float n = 1.4 - 200.*(1.-m*m);
@@ -247,6 +222,7 @@ vec3 bg(vec3 d) {
     vec3 col = SKYCOLOR*exp2(-d.y)+t1+pow(m,4.)*.05+stars(d)+syncs[SKYFLASH];        
     return mix(FOG_COLOR,col,smoothstep(-.2,1.,d.y));
 }
+
 
 // ----------------------------
 // CLAP
@@ -261,7 +237,7 @@ void main() {
     // ----------------------------
     // CLIP
     // ----------------------------       
-    PLANEPOS = HOUSELOC+vec3(0,3,(syncs[ROW]-1416.)*.2);    
+        PLANEPOS = HOUSELOC+vec3(0,3,(syncs[ROW]-1408.)*.2);    
     
     o = vec3(syncs[CAM_X],syncs[CAM_Y],syncs[CAM_Z])+mix(HOUSELOC,PLANEPOS,syncs[CAM_TRACKING]);
     d.xy *= R(syncs[CAM_ROLL]);
@@ -306,8 +282,21 @@ void main() {
         
     //col = vec3(exp2(-float(i)/10.));
     
-    
-    cloudmarch(o,d,t);
+       
+    float t2,tnew,dt,den,prev,cur;	     
+    o.z += syncs[ROW]*.02+syncs[CLOUD_OFFSET];
+    for (int i=0;i<200&&t2<t&&sum.a<.99;i++) {                        
+            tnew = min(t2+max(.2,0.01*t2),t);        
+            dt = tnew-t2;
+            t2 = tnew;
+            o += d*dt;        
+            den = cloudmap(o);       
+            if (den > 0.) {                      
+               float w = min(den*exp2(-.1*t2)*dt*7.,1.);           
+               sum += vec4((vec3(.04,.04,.06)+ clamp(den - cloudmap(o+MOONDIR), 0.,1. )*.5)*w,w)*(1.-sum.a);
+            }                                      
+        }        
+
     col *= 1.-sum.w;
     col += sum.xyz;    
     col = mix(col,vec3(1.),syncs[FLASH])*syncs[FADE];    
