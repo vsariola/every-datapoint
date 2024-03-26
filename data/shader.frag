@@ -169,19 +169,19 @@ void main() {
     d.xz *= R(syncs[CAM_YAW]);                    
     
     // make background
-    float t,dist,t2,tprev,rho,	
+    float t,t2,rho,	
           m = max(dot(d,MOONDIR),0),
-          n = 1.4 - 200*(1-m*m);    
+          dist = 1.4 - 200*(1-m*m);    
     col = vec3(.02,.02,.05)*exp2(-d.y)+             // sky color, darkens slighty towards space
-        smoothstep(0.,.1,n)*(1-n*rnoise(d*47))+     // moon
+        smoothstep(0.,.1,dist)*(1-dist*rnoise(d*47))+     // moon
         pow(m,4.)*.05+                              // moon glow        
         syncs[SKYFLASH];                            // flashing sky (bombs falling at distance)
     for(int i=0;i<3;i++) {
         m = round(d.y*200)+float(i-1);
-        n = noise(vec3(m))*200;
-        tprev = m/200;
-        rho = sqrt(1. - tprev*tprev);        
-        col += pow(clamp(dot(d,vec3(cos(n)*rho,tprev,sin(n)*rho)),0,1),3e6*(rnoise(d*10+syncs[ROW]/10)+.1)); // stars have slightly different sizes and flicker
+        dist = noise(vec3(m))*200;
+        m/=200;
+        rho = sqrt(1-m*m);        
+        col += pow(clamp(dot(d,vec3(cos(dist)*rho,m,sin(dist)*rho)),0,1),3e6*(rnoise(d*10+syncs[ROW]/10)+.1)); // stars have slightly different sizes and flicker
     }
     col = mix(FOG_COLOR,col,smoothstep(-.2,1.,d.y));
 
@@ -197,7 +197,7 @@ void main() {
             col = mix(
                 FOG_COLOR,
                 diff*max(dot(normal,MOONDIR),0)+(                       // diffuse light
-                    fres*pow(1.-abs(dot(d,normal)),9.)+                  // fresnel
+                    fres*pow(1-abs(dot(d,normal)),9.)+                  // fresnel
                     pow(max(dot(normal,normalize(MOONDIR-d)),0),200.)   // specular
                 )*spec,
                 exp2(-t*.02-exp2(-p.y-1)) // fog based on march distance & a bit more fog at low levels
@@ -207,9 +207,9 @@ void main() {
         
     o.z += syncs[ROW]*.02+syncs[CLOUD_OFFSET];
     for (int i=0;i<200&&t2<t&&cloudcol.a<.99;i++) {                        
-        tprev = t2;
+        m = t2;
         t2 = min(t2+max(.2,.01*t2),t);        
-        dist = t2-tprev;               
+        dist = t2-m;               
         rho = cloudmap(o += d*dist);       
         if (rho > 0) {                      
             cloudcol += vec4(
