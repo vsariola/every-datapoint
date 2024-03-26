@@ -102,12 +102,12 @@ vec3 map(vec3 p) {
                 
     q = p + vec3(0,0,.5);
     h = clamp(q.z*1.1, 0, 1);    
-    PLANE = length( q - vec3(0,0,.9)*h) - mix(.05,.017,clamp(1-h*2,0,1));                  
+    PLANE = length( q - vec3(0,0,.9)*h) - mix(.05,.02,clamp(1-h*2,0,1));                  
     
     if (syncs[BOMBS]>0.) {
         for(int i=0;i<6;i++) {            
             float a = noise(vec3(i*10)),
-                  t = max(syncs[BOMBS]-float(i)*.1,0);
+                  t = max(syncs[BOMBS]-i*.1,0);
             q = p+vec3(0,t*t,-a*.3);           
             q.yz *= R(t*.1);
             q.xz *= R(t*(a-.5));                        
@@ -117,7 +117,7 @@ vec3 map(vec3 p) {
     }
 
     p.x = abs(p.x);         
-    q = p - vec3(0,.016,-.37);
+    q = p - vec3(0,.02,-.4);
     q.x -= min(q.x,.2);
     q.z -= clamp(q.z,p.x*.05-.04,.03-p.x*.2);
     PLANE = smin(PLANE,length(q)-.007);
@@ -177,7 +177,7 @@ void main() {
         pow(m,4.)*.05+                              // moon glow        
         syncs[SKYFLASH];                            // flashing sky (bombs falling at distance)
     for(int i=0;i<3;i++) {
-        m = round(d.y*200)+float(i-1);
+        m = round(d.y*200)+i-1;
         dist = noise(vec3(m))*200;
         m/=200;
         rho = sqrt(1-m*m);        
@@ -206,10 +206,8 @@ void main() {
         }
         
     o.z += syncs[ROW]*.02+syncs[CLOUD_OFFSET];
-    for (int i=0;i<200&&t2<t&&cloudcol.a<.99;i++) {                        
-        m = t2;
-        t2 = min(t2+max(.2,.01*t2),t);        
-        dist = t2-m;               
+    for (int i=0;i<200&&t2<t-.001&&cloudcol.a<.99;i++) {                                
+        t2+=dist = min(max(.2,.01*t2),t-t2);               
         rho = cloudmap(o += d*dist);       
         if (rho > 0) {                      
             cloudcol += vec4(
