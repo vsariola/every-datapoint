@@ -18,6 +18,7 @@ const vec3 HOUSELOC = vec3(.5,1,-32.6);
 
 const vec2 O = vec2(0,1);
 const vec2 N = vec2(.001,0);
+const vec2 iResolution = vec2(@XRES@,@YRES@);  
 
 // Global variables
 
@@ -61,14 +62,12 @@ float smin( float a, float b )
 // Map and
 
 float plane(vec3 p) {   
-    float ret;            
-    vec3 a = vec3(0,0,-14.);
-    vec3 b = vec3(0,0,13.);
+    float ret;                
     vec3 q;
-    vec3 pa = p - a, ba = b - a;
+    vec3 pa = p + vec3(0,0,14), ba = vec3(0,0,27);
     float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
-    float m = clamp((.5-h)*2.,0.,1.);
-    float w = min((1.0-h)*20.,1.);
+    float m = clamp((.5-h)*2,0.,1.);
+    float w = min((1-h)*20,1.);
     ret = length( pa - ba*h - vec3(0,1,0)*m) - mix(1.5,.5,m);        
         
     p.x = abs(p.x);    
@@ -180,9 +179,7 @@ float bumpmap(vec3 p) {
 // CLAP
 // ----------------------------  
 
-void main() {
-    vec2 iResolution = vec2(@XRES@,@YRES@);   
-    
+void main() {    
     d = normalize(vec3((2*gl_FragCoord.xy-iResolution)/iResolution.y,1.));         
     // ----------------------------
     // CLIP
