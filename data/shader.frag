@@ -165,7 +165,7 @@ void main() {
     
     p = o = vec3(syncs[CAM_X],syncs[CAM_Y],syncs[CAM_Z])+mix(HOUSELOC,PLANEPOS,syncs[CAM_TRACKING]);
     d.xy *= R(syncs[CAM_ROLL]);
-    d.yz *= R(syncs[CAM_PITCH]+sin(syncs[ROW]/16)*syncs[BREATHING]);        
+    d.yz *= R(syncs[CAM_PITCH]+sin(syncs[ROW]*syncs[BREATHING])*.02);        
     d.xz *= R(syncs[CAM_YAW]);                    
     
     // make background
