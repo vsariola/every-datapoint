@@ -193,9 +193,6 @@ void entrypoint(void)
 	// create and compile shader programs
 	pidMain = ((PFNGLCREATESHADERPROGRAMVPROC)wglGetProcAddress("glCreateShaderProgramv"))(GL_FRAGMENT_SHADER, 1, &shader_sync_frag);
 	CHECK_ERRORS();
-	
-	//glBindTexture(GL_TEXTURE_2D, 1);	
-	//CHECK_ERRORS();
 
 	buf->Play(0, 0, 0);
 
@@ -268,13 +265,11 @@ void entrypoint(void)
 		CHECK_ERRORS();
 
 		glRects(-1, -1, 1, 1);
-		CHECK_ERRORS();		
-
-
+		CHECK_ERRORS();			
 	} while (
 		!GetAsyncKeyState(VK_ESCAPE)
 		#if !defined(SYNC) && !defined(CAPTURE)
-		&& playCursor < 2 * SU_LENGTH_IN_SAMPLES * sizeof(SUsample)
+		&& playCursor < 0x2800000 // nice round number
 		#endif
 		#ifdef CAPTURE
 		&& frame_counter < CAPTURE_FRAME_RATE* SU_LENGTH_IN_SAMPLES/SU_SAMPLE_RATE
