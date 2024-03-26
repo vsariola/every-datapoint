@@ -1,8 +1,5 @@
 bits 32
 
-section		.rkconst	data	align=1
-c_three		dw		    3
-
 %include "minirocket.inc"
 
 section		.rocket     code    align=1

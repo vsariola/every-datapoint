@@ -1,7 +1,7 @@
 #version 430
 
 // SYNCS - do not touch this line, will be replaced with sync definitions
-layout(location = 0) uniform float syncs[RKT_NUMTRACKS+1]; // location=0 ensures consistent location regardless of driver
+layout(location=0) uniform float syncs[RKT_NUMTRACKS+1]; // location=0 ensures consistent location regardless of driver
 
 out vec3 outcolor;
 
@@ -63,7 +63,7 @@ float smin( float a, float b )
 // Map and cloudmap
 
 float cloudmap(vec3 p) {    
-    float a = pow(rnoise(p/12),2.), rho = a-p.y*.1-smoothstep(5.,-1.,p.y);
+    float a = pow(rnoise(p/12),2.), rho = a-p.y*.1-smoothstep(5,-1,p.y);
     for (int i=0;i<3;i++) {
         rho += noise(p)*a*.5;
         p *= 2.1;
