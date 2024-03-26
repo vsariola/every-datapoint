@@ -39,9 +39,8 @@ _minirocket_sync@8:
     fild    word [value_data+edx*2+2]  ; v1*256 v0 a
     fidiv   word [type_data]           ; v1 v0 a
     fsub    st0, st1    ; v1-v0 v0 a
-    fmul    st0, st2    ; a*(v1-v0) v0 a
-    faddp   st1         ; v0+a*(v1-v0) a
-    fstp    st1         ; v0+a*(v1-v0)
+    fmulp   st2         ; v0 a*(v1-v0)
+    faddp   st1         ; v0+a*(v1-v0)   
     inc     ecx
 .writesync:
     fstp	dword [esi]
