@@ -21,7 +21,7 @@ const vec2 N = vec2(.001,0);
 
 // Global variables
 
-vec4 sum = vec4(0);
+vec4 cloudcol = vec4(0);
 vec3 o, d;
 vec3 PLANEPOS;
 float PROPELLOR, PLANE, GROUND,WATER, house;
@@ -64,19 +64,7 @@ float smin( float a, float b )
     return .5*(a+b-sqrt(x*x+.1));
 }
 
-float vecmin(vec3 v) {
-    return min(min(v.x,v.y),v.z);
-}
-
 // Map and
-
-vec3 motors(vec3 p) {
-    vec3 q = p - vec3(6.7,0.2,4.4);
-    q.z += step(0.,q.x)*.5;
-    q.x = abs(q.x);
-    q.x -= 2.3;    
-    return q;
-}
 
 float bomb(vec3 p) {    
     float ret;
@@ -113,7 +101,12 @@ float plane(vec3 p) {
     q.z -= clamp(q.z,q.y*.2,7.-q.y*.8);    
     q.y -= clamp(q.y,1.,6.);    
     ret = smin(ret,length(q)-.6+p.y*.05);
-    q = motors(p);
+    
+    // motors
+    q = p - vec3(6.7,0.2,4.4);
+    q.z += step(0.,q.x)*.5;
+    q.x = abs(q.x);
+    q.x -= 2.3;                
     q.z -= clamp(q.z,-3.9+p.x*.2,3.9);    
     ret = smin(ret,length(q)-1.+q.z*.2);
    
@@ -179,6 +172,8 @@ vec3 map(vec3 p) {
     return vec3(GROUND,PLANE,WATER);
 }
 
+// bumpmap is used when calculating the normals. it's the same map as before, but with additional
+// noise added to water and ground materials
 float bumpmap(vec3 p) {
     vec3 ret = map(p);            
     ret.x += rnoise(p*2.)*.1;
@@ -187,7 +182,7 @@ float bumpmap(vec3 p) {
         p.xz *= mat2(.8,.6,-.6,.8);   
         p+=.2;
     }             
-    return vecmin(ret);    
+    return min(min(ret.x,ret.y),ret.z);    
 }
 
 // ----------------------------
@@ -230,11 +225,11 @@ void main() {
     col = mix(FOG_COLOR,col,smoothstep(-.2,1.,d.y));
 
     // march the map and plane
-    float t,dist;
+    float t,dist,t2,tnew,rho;	     
     vec3 p = o,mat;
     int i;    
     for (i=0;i<200&&t<200.;i++)
-        if (mat=map(p),t+=dist=vecmin(mat),p+=d*dist,dist<.001*t) {                                            
+        if (mat=map(p),t+=dist=min(min(mat.x,mat.y),mat.z),p+=d*dist,dist<.001*t) {                                            
             // materials
             vec3 n = normalize(bumpmap(p)-vec3(bumpmap(p-N.xyy),bumpmap(p-N.yxy),bumpmap(p-N.yyx)));
             vec3 spec = vec3(0);
@@ -253,29 +248,25 @@ void main() {
             break;
         }
         
-    
-       
-    float t2,tnew,dt,den,prev,cur;	     
     o.z += syncs[ROW]*.02+syncs[CLOUD_OFFSET];
-    for (int i=0;i<200&&t2<t&&sum.a<.99;i++) {                        
+    for (int i=0;i<200&&t2<t&&cloudcol.a<.99;i++) {                        
         tnew = min(t2+max(.2,.01*t2),t);        
-        dt = tnew-t2;
+        dist = tnew-t2;
         t2 = tnew;        
-        den = cloudmap(o += d*dt);       
-        if (den > 0.) {                      
-            float w = min(den*exp2(-.1*t2)*dt*7.,1.);           
-            sum += vec4(
-                (vec3(.04,.04,.06)+clamp(den-cloudmap(o+MOONDIR),0.,1.)*.5)*w,
-                w
-            )*(1.-sum.a);
+        rho = cloudmap(o += d*dist);       
+        if (rho > 0.) {                      
+            cloudcol += vec4(
+                (vec3(.04,.04,.06)+clamp(rho-cloudmap(o+MOONDIR),0.,1.)*.5),
+                1
+            )*(1.-cloudcol.a)*min(rho*exp2(-.1*t2)*dist*7.,1.);
         }                                      
     }        
     
     col = mix(
-        col*(1.-sum.w)+sum.xyz, // alpha blend clouds on the scene
-        vec3(1),               // FLASH makes the screen fade to white
+        col*(1.-cloudcol.w)+cloudcol.xyz, // alpha blend clouds on the scene
+        vec3(1),                          // FLASH makes the screen fade to white
         syncs[FLASH]
-    )*syncs[FADE];              // FADE makes the whole screen fade to black
+    )*syncs[FADE];                        // FADE makes the whole screen fade to black
         
     // ----------------------------
     // CLAP
