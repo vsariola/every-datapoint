@@ -22,9 +22,9 @@ const vec2 iResolution = vec2(@XRES@,@YRES@);
 
 // Global variables
 
-vec4 cloudcol = vec4(0);
-vec3 o, d, PLANEPOS;
-float PLANE,GROUND,WATER, house;
+vec4 cloudcol;
+vec3 p, o, d, PLANEPOS, col, mat;
+float PLANE,GROUND,WATER, house, fres, diff;
 
 // Noise functions
 
@@ -48,58 +48,22 @@ float rnoise(vec3 p) {
 
 // SDF primitives and manipulation functions
 
-float sdBox( vec3 p, vec3 b )
+float sdBox( vec3 p)
 {  
-  return length(max(p = abs(p) - b,0.)) + min(max(p.x,max(p.y,p.z)),0.);
+  return length(max(p,0.)) + min(max(p.x,max(p.y,p.z)),0.);
 }
 
 float smin( float a, float b )
 {    
     float x = b-a;
-    return .5*(a+b-sqrt(x*x+.1));
+    return .5*( a+b-sqrt(x*x+.0001));
 }
 
-// Map and
 
-float plane(vec3 p) {   
-    float ret;                
-    vec3 q;
-    vec3 pa = p + vec3(0,0,14), ba = vec3(0,0,27);
-    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
-    float m = clamp((.5-h)*2,0.,1.);
-    float w = min((1-h)*20,1.);
-    ret = length( pa - ba*h - vec3(0,1,0)*m) - mix(1.5,.5,m);        
-        
-    p.x = abs(p.x);    
-    
-    q = p - vec3(0,1.2,-11.2);
-    q.x -= min(q.x,6.);
-    q.z -= clamp(q.z,-1.3+p.x*.05,1.-p.x*.24);
-    ret = smin(ret,length(q)-.2);
-    q = p - vec3(0,-.1,4.);
-    q.x -= min(q.x,20.5);
-    q.z -= clamp(q.z,-2.,2.-p.x*.10);
-    q.y -= p.x*.06;
-    ret = smin(ret,length(q)-1.+p.x*.04);
-    q = p - vec3(0,0,-14.);    
-    q.z -= clamp(q.z,q.y*.2,7.-q.y*.8);    
-    q.y -= clamp(q.y,1.,6.);    
-    ret = smin(ret,length(q)-.6+p.y*.05);
-    
-    // motors
-    q = p - vec3(6.7,0.2,4.4);
-    q.z += step(0.,q.x)*.5;
-    q.x = abs(q.x);
-    q.x -= 2.3;                
-    q.z -= clamp(q.z,-3.9+p.x*.2,3.9);    
-    ret = smin(ret,length(q)-1.+q.z*.2);
-   
-    return ret;
-}
-
+// Map and cloudmap
 
 float cloudmap(vec3 p) {    
-    float a = pow(rnoise(p/12.),2.), rho = a-p.y*.1-smoothstep(5.,-1.,p.y);
+    float a = pow(rnoise(p/12),2.), rho = a-p.y*.1-smoothstep(5.,-1.,p.y);
     for (int i=0;i<3;i++) {
         rho += noise(p)*a*.5;
         p *= 2.1;
@@ -109,9 +73,9 @@ float cloudmap(vec3 p) {
 }
 
 vec3 map(vec3 p) {
-    GROUND = p.y+atan(p.z/2.-cos(p.x/10.)*2.);
+    GROUND = p.y+atan(p.z/2-cos(p.x/10)*2);
     if (GROUND<.1) {
-        float a = 8.;
+        float a = 8;
         vec3 q = p * .03;        
         for (int i = 0;i<4;i++) {
             GROUND += abs(rnoise(q)-.5)*a;
@@ -122,42 +86,55 @@ vec3 map(vec3 p) {
     }
     
     vec3 q = p-HOUSELOC;
-    float house = sdBox(q,vec3(.2,.25,.2));
+    float h = sdBox(abs(q)-vec3(.2,.25,.2));
     q.y -=.2;
-    q.xy *= R(.78);    
-    house = min(house,sdBox(q,vec3(.2)));    
-    house = abs(house+.005)-.005;
+    q.xy *= R(.78);        
+    h = abs(min(h,sdBox(abs(q)-.2))+.005)-.005;
     q = p-HOUSELOC;    
     q.z -= .2;
     q = abs(q);
-    q.xy -= .055;
-    house = max(house,-sdBox(q,vec3(.05)));    
-    GROUND = min(GROUND,house);
+    q.xy -= .055;    
+    GROUND = min(GROUND,max(h,-sdBox(abs(q)-.05)));
     
     WATER = p.y+1.3;     
     
     p -= PLANEPOS;    
-    
-    PLANE = plane(p*30.)/30.;
+                
+    vec3 pa = p + vec3(0,0,.5), ba = vec3(0,0,.9);
+    h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.);    
+    PLANE = length( pa - ba*h) - mix(.05,.017,clamp((.5-h)*2.,0.,1.));                  
     
     if (syncs[BOMBS]>0.) {
-        for(int i=0;i<6;i++) {
-            vec3 q = p;
-            float a = noise(vec3(i*10));
-            q.z -= a*.3;                  
-            float t = max(syncs[BOMBS]-float(i)*.1,0.);
-            q.y += t*t;
+        for(int i=0;i<6;i++) {            
+            float a = noise(vec3(i*10)),t = max(syncs[BOMBS]-float(i)*.1,0.);
+            q = p+vec3(0,t*t,-a*.3);           
             q.yz *= R(t*.1);
-            q.xz *= R(t*.3*(a-.5));                        
-            PLANE = min(
-                PLANE,
-                min(
-                    sdBox(q+vec3(0,0,.06),vec3(.012)),
-                    length(q-vec3(0,0,clamp(q.z,-.06,.06)))-min(q.z*.3+.02,.015)
-                )
-            );
+            q.xz *= R(t*(a-.5));                        
+            PLANE = min(PLANE,sdBox(abs(q+vec3(0,0,.06))-.012));            
+            PLANE = min(PLANE,length(q-vec3(0,0,clamp(q.z,-.06,.06)))-min(q.z*.3+.02,.015));             
         }
     }
+
+    p.x = abs(p.x);         
+    q = p - vec3(0,.016,-.37);
+    q.x -= min(q.x,.2);
+    q.z -= clamp(q.z,-.04+p.x*.05,.03-p.x*.2);
+    PLANE = smin(PLANE,length(q)-.007);
+    q = p - vec3(0,-.003,.13);
+    q.x -= min(q.x,.68);
+    q.z -= clamp(q.z,-.07,.07-p.x*.10);
+    q.y -= p.x*.06;
+    PLANE = smin(PLANE,length(q)-.03+p.x*.04);
+    q = p - vec3(0,0,-.47);    
+    q.z -= clamp(q.z,q.y*.2,.23-q.y*.8);    
+    q.y -= clamp(q.y,.03,.2);    
+    PLANE = smin(PLANE,length(q)-.02+p.y*.05);    
+    q = p - vec3(.25,0,.16);    
+    q.x = abs(q.x);
+    q.x -= .08;                
+    q.z -= clamp(q.z,-.1+p.x*.2,.1);    
+    PLANE = smin(PLANE,length(q)-.04+q.z*.2);          
+     
     
     return vec3(GROUND,PLANE,WATER);
 }
@@ -166,10 +143,10 @@ vec3 map(vec3 p) {
 // noise added to water and ground materials
 float bumpmap(vec3 p) {
     vec3 ret = map(p);            
-    ret.x += rnoise(p*2.)*.1;
+    ret.x += rnoise(p*2)*.1;
     for (int i=0;i<4;i++) {
         ret.z += rnoise(p+syncs[ROW]*.02)*.01;
-        p.xz *= mat2(.8,.6,-.6,.8);   
+        p.xz *= R(.6);   
         p+=.2;
     }             
     return min(min(ret.x,ret.y),ret.z);    
@@ -180,55 +157,53 @@ float bumpmap(vec3 p) {
 // ----------------------------  
 
 void main() {    
-    d = normalize(vec3((2*gl_FragCoord.xy-iResolution)/iResolution.y,1.));         
+    d = normalize(vec3((2*gl_FragCoord.xy-iResolution)/iResolution.y,1));         
     // ----------------------------
     // CLIP
     // ----------------------------       
-    PLANEPOS = HOUSELOC+vec3(0,3,(syncs[ROW]-1408.)*.2);    
+    PLANEPOS = HOUSELOC+vec3(0,3,(syncs[ROW]-1408)*.2);    
     
-    o = vec3(syncs[CAM_X],syncs[CAM_Y],syncs[CAM_Z])+mix(HOUSELOC,PLANEPOS,syncs[CAM_TRACKING]);
+    p = o = vec3(syncs[CAM_X],syncs[CAM_Y],syncs[CAM_Z])+mix(HOUSELOC,PLANEPOS,syncs[CAM_TRACKING]);
     d.xy *= R(syncs[CAM_ROLL]);
-    d.yz *= R(syncs[CAM_PITCH]+sin(syncs[ROW]/16.)*syncs[BREATHING]);        
+    d.yz *= R(syncs[CAM_PITCH]+sin(syncs[ROW]/16)*syncs[BREATHING]);        
     d.xz *= R(syncs[CAM_YAW]);                    
-    
-    vec3 col, p = o,mat;
     
     // make background
     float t,dist,t2,tnew,rho,	
           m = max(dot(d,MOONDIR),0.),
-          n = 1.4 - 200.*(1.-m*m);    
+          n = 1.4 - 200*(1-m*m),
+          fres,
+          diff;    
     col = vec3(.02,.02,.05)*exp2(-d.y)+             // sky color, darkens slighty towards space
-        smoothstep(0.,.1,n)*(1.-n*rnoise(d*47.))+   // moon
+        smoothstep(0.,.1,n)*(1-n*rnoise(d*47))+   // moon
         pow(m,4.)*.05+                              // moon glow        
         syncs[SKYFLASH];                            // flashing sky (bombs falling at distance)
-    for(int i=-1;i<2;i++) {
-        float level = round(d.y*2e2)+float(i);
+    for(int i=0;i<3;i++) {
+        float level = round(d.y*2e2)+float(i-1);
         float angle = noise(vec3(level))*2e2;
-        float fl = level/2e2,fa = sqrt(1. - fl*fl);
-        vec3 dstar = vec3(cos(angle)*fa,fl,sin(angle)*fa);
-        col += pow(clamp(dot(d,dstar),0.,1.),3e6*(noise(d*10.)+.01))* // stars have slightly different sizes
-            (rnoise(vec3(level)+syncs[ROW]/10.));                     // stars flicker
+        float fl = level/2e2,fa = sqrt(1. - fl*fl);        
+        col += pow(clamp(dot(d,vec3(cos(angle)*fa,fl,sin(angle)*fa)),0.,1.),3e6*(noise(d*10)+.01))* // stars have slightly different sizes
+            (rnoise(vec3(level)+syncs[ROW]/10));                     // stars flicker
     }
     col = mix(FOG_COLOR,col,smoothstep(-.2,1.,d.y));
 
     // march the map and plane          
-    for (int i=0;i<200&&t<200.;i++)
+    for (int i=0;i<200&&t<200;i++)
         if (mat=map(p),t+=dist=min(min(mat.x,mat.y),mat.z),p+=d*dist,dist<.001*t) {                                            
             // materials
-            vec3 n = normalize(bumpmap(p)-vec3(bumpmap(p-N.xyy),bumpmap(p-N.yxy),bumpmap(p-N.yyx)));
+            vec3 normal = normalize(bumpmap(p)-vec3(bumpmap(p-N.xyy),bumpmap(p-N.yxy),bumpmap(p-N.yyx)));
             vec3 spec = vec3(0);
-            float fres = 0., diff = 0.;            
             dist==mat.y?(spec=vec3(.05),diff=.01):
             dist==mat.z?(spec=vec3(.2,.2,.22)*clamp(mat.x,0.,1.),fres=.2):
             (diff=.02*clamp(mat.z,0.,1.));            
             col = mix(
                 FOG_COLOR,
-                diff*max(dot(n,MOONDIR),0.)+(                       // diffuse light
-                    fres*pow(1.-abs(dot(d,n)),9.)+                  // fresnel
-                    pow(max(dot(n,normalize(MOONDIR-d)),0.),200.)   // specular
+                diff*max(dot(normal,MOONDIR),0.)+(                       // diffuse light
+                    fres*pow(1.-abs(dot(d,normal)),9.)+                  // fresnel
+                    pow(max(dot(normal,normalize(MOONDIR-d)),0.),200.)   // specular
                 )*spec,
-                exp2(-t*.02-exp2(-p.y)*.5) // fog based on march distance & a bit more fog at low levels
-            )*smoothstep(1.5,0.,cloudmap(p+MOONDIR*(5.-p.y)/MOONDIR.y)); // shadows from clouds
+                exp2(-t*.02-exp2(-p.y-1)) // fog based on march distance & a bit more fog at low levels
+            )*smoothstep(1.5,0.,cloudmap(p+MOONDIR*(5-p.y)/MOONDIR.y)); // shadows from clouds
             break;
         }
         
@@ -238,16 +213,16 @@ void main() {
         dist = tnew-t2;
         t2 = tnew;        
         rho = cloudmap(o += d*dist);       
-        if (rho > 0.) {                      
+        if (rho > 0) {                      
             cloudcol += vec4(
                 (vec3(.04,.04,.06)+clamp(rho-cloudmap(o+MOONDIR),0.,1.)*.5),
                 1
-            )*(1.-cloudcol.a)*min(rho*exp2(-.1*t2)*dist*7.,1.);
+            )*(1-cloudcol.a)*min(rho*exp2(-.1*t2)*dist*7,1.);
         }                                      
     }        
     
     col = mix(
-        col*(1.-cloudcol.w)+cloudcol.xyz, // alpha blend clouds on the scene
+        col*(1-cloudcol.w)+cloudcol.xyz, // alpha blend clouds on the scene
         vec3(1),                          // FLASH makes the screen fade to white
         syncs[FLASH]
     )*syncs[FADE];                        // FADE makes the whole screen fade to black

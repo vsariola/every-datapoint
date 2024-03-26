@@ -46,7 +46,7 @@ color="ffa9b250">
 	</track>
 	<track name="cam#x" folded="0" muteKeyCount="0" color="ff60b250">
 		<key row="0" value="0.000000" interpolation="0" />
-		<key row="256" value="6.299999" interpolation="1" />		
+		<key row="256" value="6.299999" interpolation="1" />
 		<key row="512" value="0.000000" interpolation="1" />
 		<key row="767" value="-5.000000" interpolation="0" />
 		<key row="768" value="-9.199993" interpolation="0" />
@@ -68,13 +68,13 @@ color="ffa9b250">
 		<key row="1024" value="4.000000" interpolation="1" />
 		<key row="1151" value="0.000000" interpolation="0" />
 		<key row="1152" value="-2.000000" interpolation="1" />
-		<key row="1279" value="1.000000" interpolation="0" />		
+		<key row="1279" value="1.000000" interpolation="0" />
 		<key row="1344" value="-0.080000" interpolation="0" />
 		<key row="1408" value="-0.060000" interpolation="0" />
 	</track>
 	<track name="cam#z" folded="0" muteKeyCount="0" color="ff4f71b2">
 		<key row="0" value="0.030000" interpolation="0" />
-		<key row="256" value="2.000000" interpolation="0" />		
+		<key row="256" value="2.000000" interpolation="0" />
 		<key row="512" value="0.000000" interpolation="0" />
 		<key row="768" value="9.000000" interpolation="0" />
 		<key row="1024" value="-0.900000" interpolation="0" />
