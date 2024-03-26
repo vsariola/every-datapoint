@@ -79,7 +79,7 @@ vec3 map(vec3 p) {
         float a = 8;        
         for (int i = 0;i<4;i++) {
             GROUND += abs(rnoise(q)-.5)*a;
-            q.xz *= mat2(.8,.6,-.6,.8);
+            q.xz *= R(.6);
             q *= 2.1;
             a *= .5;
         }           
@@ -174,14 +174,15 @@ void main() {
           m = max(dot(d,MOONDIR),0.),
           n = 1.4 - 200*(1-m*m);    
     col = vec3(.02,.02,.05)*exp2(-d.y)+             // sky color, darkens slighty towards space
-        smoothstep(0.,.1,n)*(1-n*rnoise(d*47))+   // moon
+        smoothstep(0.,.1,n)*(1-n*rnoise(d*47))+     // moon
         pow(m,4.)*.05+                              // moon glow        
         syncs[SKYFLASH];                            // flashing sky (bombs falling at distance)
     for(int i=0;i<3;i++) {
-        float level = round(d.y*2e2)+float(i-1);
-        float angle = noise(vec3(level))*2e2;
-        float fl = level/2e2,fa = sqrt(1. - fl*fl);        
-        col += pow(clamp(dot(d,vec3(cos(angle)*fa,fl,sin(angle)*fa)),0.,1.),3e6*(rnoise(d*10+syncs[ROW]/10)+.1)); // stars have slightly different sizes and flicker
+        m = round(d.y*2e2)+float(i-1);
+        n = noise(vec3(m))*2e2;
+        tprev = m/2e2;
+        rho = sqrt(1. - tprev*tprev);        
+        col += pow(clamp(dot(d,vec3(cos(n)*rho,tprev,sin(n)*rho)),0.,1.),3e6*(rnoise(d*10+syncs[ROW]/10)+.1)); // stars have slightly different sizes and flicker
     }
     col = mix(FOG_COLOR,col,smoothstep(-.2,1.,d.y));
 
