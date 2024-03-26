@@ -24,7 +24,7 @@ const vec2 iResolution = vec2(@XRES@,@YRES@);
 
 vec4 cloudcol;
 vec3 p, o, d, PLANEPOS, col, mat;
-float PLANE,GROUND,WATER, house, fres, diff;
+float PLANE,GROUND,WATER, fres, diff;
 
 // Noise functions
 
@@ -50,7 +50,7 @@ float rnoise(vec3 p) {
 
 float sdBox( vec3 p)
 {  
-  return length(max(p,0.)) + min(max(p.x,max(p.y,p.z)),0.);
+  return length(max(p,0)) + min(max(p.x,max(p.y,p.z)),0);
 }
 
 float smin( float a, float b )
@@ -89,7 +89,7 @@ vec3 map(vec3 p) {
     float h = sdBox(abs(q)-vec3(.2,.25,.2));
     q.y -=.2;
     q.xy *= R(.78);        
-    h = abs(min(h,sdBox(abs(q)-.2))+.005)-.005;
+    h = abs(min(h,sdBox(abs(q)-.2)))-.005;
     q = p-HOUSELOC;    
     q.z -= .2;
     q = abs(q);
@@ -101,14 +101,13 @@ vec3 map(vec3 p) {
     p -= PLANEPOS;    
                 
     q = p + vec3(0,0,.5);
-    vec3 ba = vec3(0,0,.9);
-    h = clamp(dot(q,ba)/dot(ba,ba), 0., 1.);    
-    PLANE = length( q - ba*h) - mix(.05,.017,clamp((.5-h)*2.,0.,1.));                  
+    h = clamp(q.z*1.1, 0, 1);    
+    PLANE = length( q - vec3(0,0,.9)*h) - mix(.05,.017,clamp(1-h*2,0,1));                  
     
     if (syncs[BOMBS]>0.) {
         for(int i=0;i<6;i++) {            
             float a = noise(vec3(i*10)),
-                  t = max(syncs[BOMBS]-float(i)*.1,0.);
+                  t = max(syncs[BOMBS]-float(i)*.1,0);
             q = p+vec3(0,t*t,-a*.3);           
             q.yz *= R(t*.1);
             q.xz *= R(t*(a-.5));                        
@@ -120,7 +119,7 @@ vec3 map(vec3 p) {
     p.x = abs(p.x);         
     q = p - vec3(0,.016,-.37);
     q.x -= min(q.x,.2);
-    q.z -= clamp(q.z,-.04+p.x*.05,.03-p.x*.2);
+    q.z -= clamp(q.z,p.x*.05-.04,.03-p.x*.2);
     PLANE = smin(PLANE,length(q)-.007);
     q = p - vec3(0,-.003,.13);
     q.x -= min(q.x,.68);
@@ -162,7 +161,7 @@ void main() {
     // ----------------------------
     // CLIP
     // ----------------------------       
-    PLANEPOS = HOUSELOC+vec3(0,3,(syncs[ROW]-1408)*.2);    
+    PLANEPOS = HOUSELOC+vec3(0,3,syncs[ROW]/5-282);    
     
     p = o = vec3(syncs[CAM_X],syncs[CAM_Y],syncs[CAM_Z])+mix(HOUSELOC,PLANEPOS,syncs[CAM_TRACKING]);
     d.xy *= R(syncs[CAM_ROLL]);
@@ -171,18 +170,18 @@ void main() {
     
     // make background
     float t,dist,t2,tprev,rho,	
-          m = max(dot(d,MOONDIR),0.),
+          m = max(dot(d,MOONDIR),0),
           n = 1.4 - 200*(1-m*m);    
     col = vec3(.02,.02,.05)*exp2(-d.y)+             // sky color, darkens slighty towards space
         smoothstep(0.,.1,n)*(1-n*rnoise(d*47))+     // moon
         pow(m,4.)*.05+                              // moon glow        
         syncs[SKYFLASH];                            // flashing sky (bombs falling at distance)
     for(int i=0;i<3;i++) {
-        m = round(d.y*2e2)+float(i-1);
-        n = noise(vec3(m))*2e2;
-        tprev = m/2e2;
+        m = round(d.y*200)+float(i-1);
+        n = noise(vec3(m))*200;
+        tprev = m/200;
         rho = sqrt(1. - tprev*tprev);        
-        col += pow(clamp(dot(d,vec3(cos(n)*rho,tprev,sin(n)*rho)),0.,1.),3e6*(rnoise(d*10+syncs[ROW]/10)+.1)); // stars have slightly different sizes and flicker
+        col += pow(clamp(dot(d,vec3(cos(n)*rho,tprev,sin(n)*rho)),0,1),3e6*(rnoise(d*10+syncs[ROW]/10)+.1)); // stars have slightly different sizes and flicker
     }
     col = mix(FOG_COLOR,col,smoothstep(-.2,1.,d.y));
 
@@ -193,13 +192,13 @@ void main() {
             vec3 normal = normalize(bumpmap(p)-vec3(bumpmap(p-N.xyy),bumpmap(p-N.yxy),bumpmap(p-N.yyx)));
             vec3 spec = vec3(0);
             dist==mat.y?(spec=vec3(.05),diff=.01):
-            dist==mat.z?(spec=vec3(.2,.2,.22)*clamp(mat.x,0.,1.),fres=.2):
-            (diff=.02*clamp(mat.z,0.,1.));            
+            dist==mat.z?(spec=vec3(.2,.2,.22)*clamp(mat.x,0,1),fres=.2):
+            (diff=.02*clamp(mat.z,0,1));            
             col = mix(
                 FOG_COLOR,
-                diff*max(dot(normal,MOONDIR),0.)+(                       // diffuse light
+                diff*max(dot(normal,MOONDIR),0)+(                       // diffuse light
                     fres*pow(1.-abs(dot(d,normal)),9.)+                  // fresnel
-                    pow(max(dot(normal,normalize(MOONDIR-d)),0.),200.)   // specular
+                    pow(max(dot(normal,normalize(MOONDIR-d)),0),200.)   // specular
                 )*spec,
                 exp2(-t*.02-exp2(-p.y-1)) // fog based on march distance & a bit more fog at low levels
             )*smoothstep(1.5,0.,cloudmap(p+MOONDIR*(5-p.y)/MOONDIR.y)); // shadows from clouds
@@ -214,9 +213,9 @@ void main() {
         rho = cloudmap(o += d*dist);       
         if (rho > 0) {                      
             cloudcol += vec4(
-                (vec3(.04,.04,.06)+clamp(rho-cloudmap(o+MOONDIR),0.,1.)*.5),
+                (vec3(.04,.04,.06)+clamp(rho-cloudmap(o+MOONDIR),0,1)*.5),
                 1
-            )*(1-cloudcol.a)*min(rho*exp2(-.1*t2)*dist*7,1.);
+            )*(1-cloudcol.a)*min(rho*exp2(-.1*t2)*dist*7,1);
         }                                      
     }        
     
