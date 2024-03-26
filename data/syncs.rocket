@@ -103,21 +103,21 @@ color="ffb25091">
 		<key row="0" value="0.000000" interpolation="1" />
 		<key row="255" value="1.000000" interpolation="1" />
 		<key row="256" value="0.000000" interpolation="1" />
-		<key row="264" value="1.000000" interpolation="0" />
+		<key row="264" value="1.000000" interpolation="1" />
 		<key row="504" value="1.000000" interpolation="1" />
 		<key row="512" value="0.000000" interpolation="1" />
-		<key row="520" value="1.000000" interpolation="0" />
+		<key row="520" value="1.000000" interpolation="1" />
 		<key row="752" value="1.000000" interpolation="1" />
 		<key row="768" value="0.000000" interpolation="1" />
-		<key row="784" value="1.000000" interpolation="0" />
+		<key row="784" value="1.000000" interpolation="1" />
 		<key row="1023" value="1.000000" interpolation="1" />
 		<key row="1024" value="0.000000" interpolation="1" />
-		<key row="1032" value="1.000000" interpolation="0" />
+		<key row="1032" value="1.000000" interpolation="1" />
 		<key row="1144" value="1.000000" interpolation="1" />
 		<key row="1152" value="0.000000" interpolation="1" />
-		<key row="1160" value="1.000000" interpolation="0" />
+		<key row="1160" value="1.000000" interpolation="1" />
 		<key row="1600" value="1.000000" interpolation="1" />
-		<key row="1664" value="0.000000" interpolation="0" />
+		<key row="1664" value="0.000000" interpolation="1" />
 	</track>
 	<track name="bombs" folded="0" muteKeyCount="0" color="ffb28050">
 		<key row="0" value="0.000000" interpolation="0" />

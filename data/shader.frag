@@ -24,7 +24,7 @@ const vec2 N = vec2(.001,0);
 vec4 cloudcol = vec4(0);
 vec3 o, d;
 vec3 PLANEPOS;
-float PROPELLOR, PLANE, GROUND,WATER, house;
+float PLANE,GROUND,WATER, house;
 
 // Noise functions
 
@@ -197,11 +197,12 @@ void main() {
     d.yz *= R(syncs[CAM_PITCH]+sin(syncs[ROW]/16.)*syncs[BREATHING]);        
     d.xz *= R(syncs[CAM_YAW]);                    
     
-    vec3 col;
+    vec3 col, p = o,mat;
     
     // make background
-    float m = max(dot(d,MOONDIR),0.);                
-    float n = 1.4 - 200.*(1.-m*m);    
+    float t,dist,t2,tnew,rho,	
+          m = max(dot(d,MOONDIR),0.),
+          n = 1.4 - 200.*(1.-m*m);    
     col = vec3(.02,.02,.05)*exp2(-d.y)+             // sky color, darkens slighty towards space
         smoothstep(0.,.1,n)*(1.-n*rnoise(d*47.))+   // moon
         pow(m,4.)*.05+                              // moon glow        
@@ -216,11 +217,8 @@ void main() {
     }
     col = mix(FOG_COLOR,col,smoothstep(-.2,1.,d.y));
 
-    // march the map and plane
-    float t,dist,t2,tnew,rho;	     
-    vec3 p = o,mat;
-    int i;    
-    for (i=0;i<200&&t<200.;i++)
+    // march the map and plane          
+    for (int i=0;i<200&&t<200.;i++)
         if (mat=map(p),t+=dist=min(min(mat.x,mat.y),mat.z),p+=d*dist,dist<.001*t) {                                            
             // materials
             vec3 n = normalize(bumpmap(p)-vec3(bumpmap(p-N.xyy),bumpmap(p-N.yxy),bumpmap(p-N.yyx)));
