@@ -34,7 +34,7 @@ float rand(vec3 p) {
 
 float noise(vec3 p) {
     vec3 b=floor(p),f=fract(p);
-    f = f*f*(3.0-2.0*f);
+    f = f*f*(3-2*f);
     return mix(
         mix(mix(rand(b+O.xxx),rand(b+O.yxx),f.x),mix(rand(b+O.xyx),rand(b+O.yyx),f.x),f.y),
         mix(mix(rand(b+O.xxy),rand(b+O.yxy),f.x),mix(rand(b+O.xyy),rand(b+O.yyy),f.x),f.y),
@@ -43,7 +43,7 @@ float noise(vec3 p) {
 }
 
 float rnoise(vec3 p) {
-    return noise(p+noise(p*3.));
+    return noise(p+noise(p*3));
 }
 
 // SDF primitives and manipulation functions
@@ -53,11 +53,6 @@ float sdBox( vec3 p, vec3 b )
   return length(max(p = abs(p) - b,0.)) + min(max(p.x,max(p.y,p.z)),0.);
 }
 
-float sdTorus( vec3 p, vec2 b )
-{  
-  return length(vec2(length(p.yz)-b.x,p.x))-b.y;
-}
-
 float smin( float a, float b )
 {    
     float x = b-a;
@@ -65,15 +60,6 @@ float smin( float a, float b )
 }
 
 // Map and
-
-float bomb(vec3 p) {    
-    float ret;
-    vec3 q = p;
-    q.z -= clamp(q.z,-20.,20.);
-    ret = length(q)-min(p.z*.3+7.,5.);
-    ret = min(ret,sdBox(p+vec3(0,0,20),vec3(4)));
-    return ret;
-}
 
 float plane(vec3 p) {   
     float ret;            
@@ -165,7 +151,13 @@ vec3 map(vec3 p) {
             q.y += t*t;
             q.yz *= R(t*.1);
             q.xz *= R(t*.3*(a-.5));                        
-            PLANE = min(PLANE,bomb(q*300.)/300.);
+            PLANE = min(
+                PLANE,
+                min(
+                    sdBox(q+vec3(0,0,.06),vec3(.012)),
+                    length(q-vec3(0,0,clamp(q.z,-.06,.06)))-min(q.z*.3+.02,.015)
+                )
+            );
         }
     }
     
