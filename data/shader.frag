@@ -169,7 +169,7 @@ void main() {
     d.xz *= R(syncs[CAM_YAW]);                    
     
     // make background
-    float t,dist,t2,tnew,rho,	
+    float t,dist,t2,tprev,rho,	
           m = max(dot(d,MOONDIR),0.),
           n = 1.4 - 200*(1-m*m),
           fres,
@@ -209,9 +209,9 @@ void main() {
         
     o.z += syncs[ROW]*.02+syncs[CLOUD_OFFSET];
     for (int i=0;i<200&&t2<t&&cloudcol.a<.99;i++) {                        
-        tnew = min(t2+max(.2,.01*t2),t);        
-        dist = tnew-t2;
-        t2 = tnew;        
+        tprev = t2;
+        t2 = min(t2+max(.2,.01*t2),t);        
+        dist = t2-tprev;               
         rho = cloudmap(o += d*dist);       
         if (rho > 0) {                      
             cloudcol += vec4(
@@ -238,5 +238,5 @@ void main() {
 
     outcolor = pow(
         (col*(A*col+B))/(col*(C*col+D)+E),vec3(.4545)) // aces_film & gamma correction
-        +mod(gl_FragCoord.x*2.-mod(gl_FragCoord.y,2.),4.)/1024.; // 2x2 block dithering
+        +mod(gl_FragCoord.x*2-mod(gl_FragCoord.y,2.),4.)/1024; // 2x2 block dithering
 }
