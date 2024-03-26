@@ -22,8 +22,7 @@ const vec2 N = vec2(.001,0);
 // Global variables
 
 vec4 cloudcol = vec4(0);
-vec3 o, d;
-vec3 PLANEPOS;
+vec3 o, d, PLANEPOS;
 float PLANE,GROUND,WATER, house;
 
 // Noise functions
@@ -182,11 +181,9 @@ float bumpmap(vec3 p) {
 // ----------------------------  
 
 void main() {
-    vec2 iResolution = vec2(@XRES@,@YRES@), uv = (2*gl_FragCoord.xy-iResolution)/iResolution.y;   
+    vec2 iResolution = vec2(@XRES@,@YRES@);   
     
-    d = normalize(vec3(uv,1.));     
-    o = vec3(syncs[CAM_X],syncs[CAM_Y],syncs[CAM_Z]);
-    
+    d = normalize(vec3((2*gl_FragCoord.xy-iResolution)/iResolution.y,1.));         
     // ----------------------------
     // CLIP
     // ----------------------------       
