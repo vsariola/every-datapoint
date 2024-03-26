@@ -73,10 +73,10 @@ float cloudmap(vec3 p) {
 }
 
 vec3 map(vec3 p) {
+    vec3 q = p * .03;        
     GROUND = p.y+atan(p.z/2-cos(p.x/10)*2);
     if (GROUND<.1) {
-        float a = 8;
-        vec3 q = p * .03;        
+        float a = 8;        
         for (int i = 0;i<4;i++) {
             GROUND += abs(rnoise(q)-.5)*a;
             q.xz *= mat2(.8,.6,-.6,.8);
@@ -85,7 +85,7 @@ vec3 map(vec3 p) {
         }           
     }
     
-    vec3 q = p-HOUSELOC;
+    q = p-HOUSELOC;
     float h = sdBox(abs(q)-vec3(.2,.25,.2));
     q.y -=.2;
     q.xy *= R(.78);        
@@ -100,13 +100,15 @@ vec3 map(vec3 p) {
     
     p -= PLANEPOS;    
                 
-    vec3 pa = p + vec3(0,0,.5), ba = vec3(0,0,.9);
-    h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.);    
-    PLANE = length( pa - ba*h) - mix(.05,.017,clamp((.5-h)*2.,0.,1.));                  
+    q = p + vec3(0,0,.5);
+    vec3 ba = vec3(0,0,.9);
+    h = clamp(dot(q,ba)/dot(ba,ba), 0., 1.);    
+    PLANE = length( q - ba*h) - mix(.05,.017,clamp((.5-h)*2.,0.,1.));                  
     
     if (syncs[BOMBS]>0.) {
         for(int i=0;i<6;i++) {            
-            float a = noise(vec3(i*10)),t = max(syncs[BOMBS]-float(i)*.1,0.);
+            float a = noise(vec3(i*10)),
+                  t = max(syncs[BOMBS]-float(i)*.1,0.);
             q = p+vec3(0,t*t,-a*.3);           
             q.yz *= R(t*.1);
             q.xz *= R(t*(a-.5));                        
@@ -122,7 +124,7 @@ vec3 map(vec3 p) {
     PLANE = smin(PLANE,length(q)-.007);
     q = p - vec3(0,-.003,.13);
     q.x -= min(q.x,.68);
-    q.z -= clamp(q.z,-.07,.07-p.x*.10);
+    q.z -= clamp(q.z,-.07,.07-p.x*.1);
     q.y -= p.x*.06;
     PLANE = smin(PLANE,length(q)-.03+p.x*.04);
     q = p - vec3(0,0,-.47);    
@@ -134,8 +136,7 @@ vec3 map(vec3 p) {
     q.x -= .08;                
     q.z -= clamp(q.z,-.1+p.x*.2,.1);    
     PLANE = smin(PLANE,length(q)-.04+q.z*.2);          
-     
-    
+         
     return vec3(GROUND,PLANE,WATER);
 }
 
@@ -171,9 +172,7 @@ void main() {
     // make background
     float t,dist,t2,tprev,rho,	
           m = max(dot(d,MOONDIR),0.),
-          n = 1.4 - 200*(1-m*m),
-          fres,
-          diff;    
+          n = 1.4 - 200*(1-m*m);    
     col = vec3(.02,.02,.05)*exp2(-d.y)+             // sky color, darkens slighty towards space
         smoothstep(0.,.1,n)*(1-n*rnoise(d*47))+   // moon
         pow(m,4.)*.05+                              // moon glow        
@@ -182,8 +181,7 @@ void main() {
         float level = round(d.y*2e2)+float(i-1);
         float angle = noise(vec3(level))*2e2;
         float fl = level/2e2,fa = sqrt(1. - fl*fl);        
-        col += pow(clamp(dot(d,vec3(cos(angle)*fa,fl,sin(angle)*fa)),0.,1.),3e6*(noise(d*10)+.01))* // stars have slightly different sizes
-            (rnoise(vec3(level)+syncs[ROW]/10));                     // stars flicker
+        col += pow(clamp(dot(d,vec3(cos(angle)*fa,fl,sin(angle)*fa)),0.,1.),3e6*(rnoise(d*10+syncs[ROW]/10)+.1)); // stars have slightly different sizes and flicker
     }
     col = mix(FOG_COLOR,col,smoothstep(-.2,1.,d.y));
 

@@ -79,9 +79,6 @@ static int pidMain;
 #pragma data_seg(".timediv")
 static float TIME_DIVISOR = SU_SAMPLES_PER_ROW * 2 * sizeof(SUsample);
 
-#pragma data_seg(".overtxt")
-static const char overtext[] = " fluxerator chlumpie & pestis";
-
 #ifdef SYNC
 static struct sync_device* device;
 static struct sync_cb cb;
@@ -199,30 +196,7 @@ void entrypoint(void)
 	long playCursor;
 
 	do
-	{		
-		#if CAPTURE
-		// first "frame" is actually drawing the text 
-		if (frame_counter > 0) {
-			static unsigned char framepixels[XRES * YRES * 4];
-			glReadBuffer(GL_BACK);
-			glPixelStorei(GL_PACK_ALIGNMENT, 1);
-			glReadPixels(0, 0, XRES, YRES, GL_BGRA, GL_UNSIGNED_BYTE, framepixels);			
-			for (int y = 0; y < (YRES + 1) / 2; ++y)
-				for (int x = 0; x < XRES; ++x)
-					for (int c = 0; c < 4; ++c) {
-						auto b = framepixels[(x + y * XRES) * 4 + c]; framepixels[(x + y * XRES) * 4 + c] = framepixels[(x + (YRES - 1 - y) * XRES) * 4 + c]; framepixels[(x + (YRES - 1 - y) * XRES) * 4 + c] = b;
-					}
-			HBITMAP bitmap = CreateBitmap(XRES, YRES, 1, 32, framepixels);
-			PBITMAPINFO bitmapinfo = CreateBitmapInfoStruct(window, bitmap);
-			char filename[1024];
-			wsprintf(filename, "frames\\frame%06d.bmp", frame_counter);
-			CreateBMPFile(window, filename, bitmapinfo, bitmap, hDC);
-			DeleteObject(bitmap);
-		}
-		#endif
-
-		SwapBuffers(hDC);
-
+	{				
 #if !(DESPERATE)
 		// do minimal message handling so windows doesn't kill your application
 		// not always strictly necessary but increases compatibility and reliability a lot
@@ -266,6 +240,27 @@ void entrypoint(void)
 
 		glRects(-1, -1, 1, 1);
 		CHECK_ERRORS();			
+
+		SwapBuffers(hDC);
+
+#if CAPTURE
+		static unsigned char framepixels[XRES * YRES * 4];
+		glReadBuffer(GL_BACK);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glReadPixels(0, 0, XRES, YRES, GL_BGRA, GL_UNSIGNED_BYTE, framepixels);
+		for (int y = 0; y < (YRES + 1) / 2; ++y)
+			for (int x = 0; x < XRES; ++x)
+				for (int c = 0; c < 4; ++c) {
+					auto b = framepixels[(x + y * XRES) * 4 + c]; framepixels[(x + y * XRES) * 4 + c] = framepixels[(x + (YRES - 1 - y) * XRES) * 4 + c]; framepixels[(x + (YRES - 1 - y) * XRES) * 4 + c] = b;
+				}
+		HBITMAP bitmap = CreateBitmap(XRES, YRES, 1, 32, framepixels);
+		PBITMAPINFO bitmapinfo = CreateBitmapInfoStruct(window, bitmap);
+		char filename[1024];
+		wsprintf(filename, "frames\\frame%06d.bmp", frame_counter);
+		CreateBMPFile(window, filename, bitmapinfo, bitmap, hDC);
+		DeleteObject(bitmap);		
+#endif
+
 	} while (
 		!GetAsyncKeyState(VK_ESCAPE)
 		#if !defined(SYNC) && !defined(CAPTURE)
