@@ -144,7 +144,7 @@ else()
 endif()
 
 add_custom_command(TARGET intro POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:intro> ${PROJECT_SOURCE_DIR}/dist/fluxerator${exesuffix}.exe
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:intro> ${PROJECT_SOURCE_DIR}/dist/every-datapoint-is-a-soul${exesuffix}.exe
 )
 
 if (VALIDATE_SHADERS)
