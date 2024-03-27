@@ -72,15 +72,12 @@ def main():
                    f'track_data:\n' +
                    f'    dw {",".join(str(v) for v in starts)}\n' +
                    f'\n' +
-                   f'section		.rkrows data	align=1\n' +
                    f'row_data:\n' +
                    ''.join('    dw ' + ','.join(str(v) for v in t) + '\n' for t in rowtimes) +
                    f'\n' +
-                   f'section		.rkvalue data	align=1\n' +
                    f'value_data:\n' +
                    ''.join('    dw ' + ','.join(str(v) for v in t) + '\n' for t in values) +
                    f'\n' +
-                   f'section		.rktypes data	align=1\n' +
                    f'type_data:\n' +
                    ''.join('    db ' + ','.join(str(v) for v in t) + '\n' for t in types))
 
