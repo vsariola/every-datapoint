@@ -142,12 +142,13 @@ vec3 map(vec3 p) {
 // bumpmap is used when calculating the normals. it's the same map as before, but with additional
 // noise added to water and ground materials
 float bumpmap(vec3 p) {
-    vec3 ret = map(p);            
-    ret.x += rnoise(p*2)*.1;
+    vec3 ret = map(p); 
+    float a=.2;    
     for (int i=0;i<4;i++) {
-        ret.z += rnoise(p+syncs[ROW]*.02)*.01;
-        p.xz *= R(.6);   
-        p+=.2;
+        ret.z += rnoise(p+syncs[ROW]*.02+noise(p))*a*.1;
+        ret.x += rnoise(p)*a;
+        p.xz *= R(.6)*2.1;           
+        a*=.5;
     }             
     return min(min(ret.x,ret.y),ret.z);    
 }
