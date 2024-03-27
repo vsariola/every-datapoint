@@ -13,7 +13,7 @@ out vec3 outcolor;
 // Constants
 
 const vec3 MOONDIR = normalize(vec3(1,.5,-1));
-const vec3 FOG_COLOR = vec3(.03,.03,.05);
+const vec3 FOG_COLOR = vec3(.03,.03,.04);
 const vec3 HOUSELOC = vec3(.5,1,-32.6);
 
 const vec2 O = vec2(0,1);
@@ -157,7 +157,7 @@ float bumpmap(vec3 p) {
 // ----------------------------  
 
 void main() {    
-    d = normalize(vec3((2*gl_FragCoord.xy-iResolution)/iResolution.y,1));         
+    d = normalize(vec3((2*gl_FragCoord.xy-iResolution)/iResolution.y,1.4));         
     // ----------------------------
     // CLIP
     // ----------------------------       
@@ -193,7 +193,7 @@ void main() {
             vec3 spec = vec3(0);
             dist==mat.y?(spec=vec3(.05),diff=.01):
             dist==mat.z?(spec=vec3(.2,.2,.22)*clamp(mat.x,0,1),fres=.2):
-            (diff=.02*clamp(mat.z,0,1));            
+            (diff=.01*clamp(mat.z,0,1));            
             col = mix(
                 FOG_COLOR,
                 diff*max(dot(normal,MOONDIR),0)+(                       // diffuse light
@@ -201,7 +201,7 @@ void main() {
                     pow(max(dot(normal,normalize(MOONDIR-d)),0),200.)   // specular
                 )*spec,
                 exp2(-t*.02-exp2(-p.y-1)) // fog based on march distance & a bit more fog at low levels
-            )*smoothstep(1.5,0.,cloudmap(p+MOONDIR*(5-p.y)/MOONDIR.y)); // shadows from clouds
+            )*smoothstep(1.5,0.,cloudmap(p+MOONDIR*12)); // shadows from clouds
             break;
         }
         
@@ -221,7 +221,7 @@ void main() {
         col*(1-cloudcol.w)+cloudcol.xyz, // alpha blend clouds on the scene
         vec3(1),                          // FLASH makes the screen fade to white
         syncs[FLASH]
-    )*syncs[FADE];                        // FADE makes the whole screen fade to black
+    )*syncs[FADE]*1.2;                        // FADE makes the whole screen fade to black
         
     // ----------------------------
     // CLAP

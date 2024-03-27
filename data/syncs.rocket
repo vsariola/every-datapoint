@@ -5,13 +5,13 @@ beatsPerMin="111">
 	<track name="cam#roll" folded="0" muteKeyCount="0"
 color="ffb27474">
 		<key row="0" value="0.000000" interpolation="0" />
-		<key row="256" value="0.250000" interpolation="1" />		
+		<key row="256" value="0.250000" interpolation="1" />
 		<key row="512" value="0.000000" interpolation="0" />
 	</track>
 	<track name="cam#pitch" folded="0" muteKeyCount="0"
 color="ffb28050">
 		<key row="0" value="0.250000" interpolation="0" />
-		<key row="256" value="-0.250000" interpolation="1" />
+		<key row="256" value="0.650000" interpolation="1" />
 		<key row="511" value="-0.228320" interpolation="0" />
 		<key row="512" value="-1.000000" interpolation="1" />
 		<key row="767" value="0.100000" interpolation="0" />
@@ -22,17 +22,17 @@ color="ffb28050">
 		<key row="1279" value="-0.300000" interpolation="0" />
 		<key row="1280" value="-0.000000" interpolation="0" />
 		<key row="1344" value="-1.000000" interpolation="1" />
-		<key row="1407" value="-1.75000" interpolation="0" />
+		<key row="1407" value="-1.750000" interpolation="0" />
 		<key row="1408" value="0.250000" interpolation="0" />
 	</track>
 	<track name="cam#yaw" folded="0" muteKeyCount="0"
 color="ffa9b250">
 		<key row="0" value="0.000000" interpolation="0" />
-		<key row="256" value="-3.320000" interpolation="1" />
+		<key row="256" value="-3.450000" interpolation="1" />
 		<key row="511" value="-3.000000" interpolation="0" />
 		<key row="512" value="0.000000" interpolation="1" />
 		<key row="767" value="1.500000" interpolation="0" />
-		<key row="768" value="3.75000" interpolation="1" />
+		<key row="768" value="3.750000" interpolation="1" />
 		<key row="1023" value="2.750000" interpolation="0" />
 		<key row="1024" value="-1.000000" interpolation="1" />
 		<key row="1151" value="1.000000" interpolation="0" />
@@ -48,7 +48,7 @@ color="ffa9b250">
 		<key row="256" value="6.299999" interpolation="1" />
 		<key row="512" value="0.000000" interpolation="1" />
 		<key row="767" value="-5.000000" interpolation="0" />
-		<key row="768" value="-9.2000" interpolation="0" />
+		<key row="768" value="-9.200000" interpolation="0" />
 		<key row="1024" value="2.000000" interpolation="1" />
 		<key row="1151" value="-2.000000" interpolation="0" />
 		<key row="1152" value="2.000000" interpolation="1" />
@@ -74,7 +74,7 @@ color="ffa9b250">
 	<track name="cam#z" folded="0" muteKeyCount="0" color="ff4f71b2">
 		<key row="0" value="0.030000" interpolation="0" />
 		<key row="256" value="2.000000" interpolation="0" />
-		<key row="512" value="0.000000" interpolation="0" />
+		<key row="512" value="-1.000000" interpolation="0" />
 		<key row="768" value="9.000000" interpolation="0" />
 		<key row="1024" value="-0.900000" interpolation="0" />
 		<key row="1152" value="3.400000" interpolation="0" />
@@ -129,8 +129,8 @@ color="ffb25091">
 	<track name="cloud_offset" folded="0" muteKeyCount="0"
 color="ffa9b250">
 		<key row="0" value="-75.000000" interpolation="0" />
-		<key row="256" value="-78.899887" interpolation="0" />
-		<key row="512" value="1.200001" interpolation="0" />
+		<key row="256" value="-80.899887" interpolation="0" />
+		<key row="512" value="3.200001" interpolation="0" />
 		<key row="768" value="14.000000" interpolation="0" />
 		<key row="1024" value="-20.499990" interpolation="0" />
 		<key row="1152" value="-0.699993" interpolation="0" />
