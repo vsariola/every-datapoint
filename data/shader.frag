@@ -14,7 +14,7 @@ out vec3 outcolor;
 
 const vec3 MOONDIR = vec3(1,.5,-1)/1.5;
 const vec3 FOG_COLOR = vec3(.03,.03,.05);
-const vec3 HOUSELOC = vec3(.5,.95,-32.6);
+const vec3 HOUSELOC = vec3(.5,.95,-33);
 
 const vec2 O = vec2(0,1);
 const vec2 N = vec2(.001,0);
@@ -84,7 +84,7 @@ vec3 map(vec3 p) {
     }
     
     q = p-HOUSELOC;
-    float h = sdBox(abs(q)-vec3(.1,.12,.1));
+    float h = sdBox(abs(q)-.1);
     q.y -=.1;
     q.xy *= R(.8);        
     h = abs(min(h,sdBox(abs(q)-.1)))-.003;
