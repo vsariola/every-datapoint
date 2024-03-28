@@ -161,7 +161,7 @@ void main() {
     // ----------------------------
     // CLIP
     // ----------------------------       
-    PLANEPOS = HOUSELOC+vec3(0,3,syncs[ROW]/5-282);    
+    PLANEPOS = HOUSELOC+vec3(0,3+syncs[PLANEHEIGHT],syncs[ROW]/5-282);    
     
     p = o = vec3(syncs[CAM_X],syncs[CAM_Y],syncs[CAM_Z])+mix(HOUSELOC,PLANEPOS,syncs[CAM_TRACKING]);
     d.xy *= R(syncs[CAM_ROLL]);
