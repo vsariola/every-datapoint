@@ -1,7 +1,7 @@
 #version 430
 
 // SYNCS - do not touch this line, will be replaced with sync definitions
-layout(location=0) uniform float syncs[RKT_NUMTRACKS+1]; // location=0 ensures consistent location regardless of driver
+layout(location=0) uniform float syncs[20]; // location=0 ensures consistent location regardless of driver
 
 out vec3 outcolor;
 
@@ -12,7 +12,7 @@ out vec3 outcolor;
 
 // Constants
 
-const vec3 MOONDIR = normalize(vec3(1,.5,-1));
+const vec3 MOONDIR = vec3(1,.5,-1)/1.5;
 const vec3 FOG_COLOR = vec3(.03,.03,.05);
 const vec3 HOUSELOC = vec3(.5,.95,-32.6);
 
@@ -87,7 +87,7 @@ vec3 map(vec3 p) {
     q = p-HOUSELOC;
     float h = sdBox(abs(q)-vec3(.1,.12,.1));
     q.y -=.1;
-    q.xy *= R(.78);        
+    q.xy *= R(.8);        
     h = abs(min(h,sdBox(abs(q)-.1)))-.0025;
     q = p-HOUSELOC;    
     q.z -= .1;
@@ -102,18 +102,16 @@ vec3 map(vec3 p) {
     q = p + vec3(0,0,.5);
     h = clamp(q.z*1.1, 0, 1);    
     PLANE = length( q - vec3(0,0,.9)*h) - mix(.05,.02,clamp(1-h*2,0,1));                  
-    
-    if (syncs[BOMBS]>0.) {
-        for(int i=0;i<6;i++) {            
-            float a = noise(vec3(i*10)),
-                  t = max(syncs[BOMBS]-i*.1,0);
-            q = p+vec3(0,t*t,-a*.3);           
-            q.yz *= R(t*.1);
-            q.xz *= R(t*(a-.5));                        
-            PLANE = min(PLANE,sdBox(abs(q+vec3(0,0,.06))-.012));            
-            PLANE = min(PLANE,length(q-vec3(0,0,clamp(q.z,-.06,.06)))-min(q.z*.3+.02,.015));             
-        }
-    }
+        
+    for(int i=0;i<6&&syncs[BOMBS]>0;i++) {            
+        float a = noise(vec3(i*10)),
+                t = max(syncs[BOMBS]-i*.1,0);
+        q = p+vec3(0,t*t,-a*.3);           
+        q.yz *= R(t*.1);
+        q.xz *= R(t*(a-.5));                        
+        PLANE = min(PLANE,sdBox(abs(q+vec3(0,0,.06))-.012));            
+        PLANE = min(PLANE,length(q-vec3(0,0,clamp(q.z,-.06,.06)))-min(q.z*.3+.02,.015));             
+    }    
 
     p.x = abs(p.x);         
     q = p - vec3(0,.02,-.4);
