@@ -126,9 +126,8 @@ color="ffb25091">
 		<key row="1409" value="0.000000" interpolation="0" />
 	</track>
 	<track name="cloud_offset" folded="0" muteKeyCount="0"
-color="ffa9b250">
-		<key row="0" value="-75.000000" interpolation="0" />
-		<key row="256" value="-80.699989" interpolation="0" />
+color="ffa9b250">		
+		<key row="0" value="-80.699989" interpolation="0" />
 		<key row="512" value="3.200001" interpolation="0" />
 		<key row="768" value="14.000000" interpolation="0" />
 		<key row="1024" value="-20.999992" interpolation="0" />

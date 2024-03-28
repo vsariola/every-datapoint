@@ -53,9 +53,8 @@ float sdBox( vec3 p)
 }
 
 float smin( float a, float b )
-{    
-    float x = b-a;
-    return .5*( a+b-sqrt(x*x+.0001));
+{        
+    return .5*( a+b-sqrt((b-a)*(b-a)+.0001));
 }
 
 
@@ -88,7 +87,7 @@ vec3 map(vec3 p) {
     float h = sdBox(abs(q)-vec3(.1,.12,.1));
     q.y -=.1;
     q.xy *= R(.8);        
-    h = abs(min(h,sdBox(abs(q)-.1)))-.0025;
+    h = abs(min(h,sdBox(abs(q)-.1)))-.003;
     q = p-HOUSELOC;    
     q.z -= .1;
     q = abs(q);
@@ -119,10 +118,10 @@ vec3 map(vec3 p) {
     q.z -= clamp(q.z,p.x*.05-.04,.03-p.x*.2);
     PLANE = smin(PLANE,length(q)-.007);
     q = p - vec3(0,-.003,.13);
-    q.x -= min(q.x,.68);    
+    q.x -= min(q.x,.7);    
     q.z -= clamp(q.z,-.07,.07-p.x*.1);    
     q.y -= p.x*.06;
-    PLANE = smin(PLANE,length(q)-.03+p.x*.04);
+    PLANE = smin(PLANE,length(q)-.03+p.x*.03);
     q = p - vec3(0,0,-.47);    
     q.z -= clamp(q.z,q.y*.2,.23-q.y*.8);    
     q.y -= clamp(q.y,.03,.2);    
