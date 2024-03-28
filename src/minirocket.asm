@@ -29,8 +29,8 @@ _minirocket_sync@8:
     fdivp   st1, st0            ; a=(t-t0)/d
     test    byte [value_data+edx*2+ebx-row_data], 1
     jnz		.out
-    fldz            ; 0 a
-    fstp    st1     ; a
+    fstp    st0     ; 
+    fldz            ; 0
 .out:
     fild    word [value_data+edx*2+ebx-row_data]    ; v0*256 a
     fidiv   word [ebx]           ; v0 a   % WARNING: we assume row data starts with 0x00 0x01 aka word 256... this is not universally true but for this intro it is
