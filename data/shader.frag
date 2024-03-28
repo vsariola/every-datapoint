@@ -18,7 +18,6 @@ const vec3 HOUSELOC = vec3(.5,.95,-32.6);
 
 const vec2 O = vec2(0,1);
 const vec2 N = vec2(.001,0);
-const vec2 iResolution = vec2(@XRES@,@YRES@);  
 
 // Global variables
 
@@ -122,8 +121,8 @@ vec3 map(vec3 p) {
     q.z -= clamp(q.z,p.x*.05-.04,.03-p.x*.2);
     PLANE = smin(PLANE,length(q)-.007);
     q = p - vec3(0,-.003,.13);
-    q.x -= min(q.x,.68);
-    q.z -= clamp(q.z,-.07,.07-p.x*.1);
+    q.x -= min(q.x,.68);    
+    q.z -= clamp(q.z,-.07,.07-p.x*.1);    
     q.y -= p.x*.06;
     PLANE = smin(PLANE,length(q)-.03+p.x*.04);
     q = p - vec3(0,0,-.47);    
@@ -131,8 +130,7 @@ vec3 map(vec3 p) {
     q.y -= clamp(q.y,.03,.2);    
     PLANE = smin(PLANE,length(q)-.02+p.y*.05);    
     q = p - vec3(.25,0,.16);    
-    q.x = abs(q.x);
-    q.x -= .08;                
+    q.x = abs(q.x)-.08;             
     q.z -= clamp(q.z,-.1+p.x*.2,.1);    
     PLANE = smin(PLANE,length(q)-.04+q.z*.2);          
          
@@ -149,8 +147,7 @@ float bumpmap(vec3 p) {
     vec3 ret = map(p); 
     float a=.2;    
     for (int i=0;i<4;i++) {
-        ret.z += rnoise(p+syncs[ROW]*.02+noise(p))*a*.1;
-        ret.x += rnoise(p)*a;
+        ret += vec3(rnoise(p),0,rnoise(p+syncs[ROW]*.02+noise(p))*.1)*a;        
         p.xz *= R(.6)*2.1;           
         a*=.5;
     }             
@@ -162,7 +159,7 @@ float bumpmap(vec3 p) {
 // ----------------------------  
 
 void main() {    
-    d = normalize(vec3((2*gl_FragCoord.xy-iResolution)/iResolution.y,1.4));         
+    d = normalize(vec3((2*gl_FragCoord.xy-vec2(@XRES@,@YRES@))/@YRES@,1.4));         
     // ----------------------------
     // CLIP
     // ----------------------------       
