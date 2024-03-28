@@ -13,8 +13,8 @@ out vec3 outcolor;
 // Constants
 
 const vec3 MOONDIR = normalize(vec3(1,.5,-1));
-const vec3 FOG_COLOR = vec3(.03,.03,.04);
-const vec3 HOUSELOC = vec3(.5,1,-32.6);
+const vec3 FOG_COLOR = vec3(.03,.03,.05);
+const vec3 HOUSELOC = vec3(.5,.95,-32.6);
 
 const vec2 O = vec2(0,1);
 const vec2 N = vec2(.001,0);
@@ -86,15 +86,15 @@ vec3 map(vec3 p) {
     }
     
     q = p-HOUSELOC;
-    float h = sdBox(abs(q)-vec3(.2,.25,.2));
-    q.y -=.2;
+    float h = sdBox(abs(q)-vec3(.1,.12,.1));
+    q.y -=.1;
     q.xy *= R(.78);        
-    h = abs(min(h,sdBox(abs(q)-.2)))-.005;
+    h = abs(min(h,sdBox(abs(q)-.1)))-.0025;
     q = p-HOUSELOC;    
-    q.z -= .2;
+    q.z -= .1;
     q = abs(q);
-    q.xy -= .055;    
-    GROUND = min(GROUND,max(h,-sdBox(abs(q)-.05)));
+    q.xy -= .027;    
+    GROUND = min(GROUND,max(h,-sdBox(abs(q)-.025)));
     
     WATER = p.y+1.3;     
     
@@ -139,6 +139,10 @@ vec3 map(vec3 p) {
     return vec3(GROUND,PLANE,WATER);
 }
 
+float vecmin(vec3 p) {
+    return min(min(p.x,p.y),p.z);  
+}
+
 // bumpmap is used when calculating the normals. it's the same map as before, but with additional
 // noise added to water and ground materials
 float bumpmap(vec3 p) {
@@ -150,7 +154,7 @@ float bumpmap(vec3 p) {
         p.xz *= R(.6)*2.1;           
         a*=.5;
     }             
-    return min(min(ret.x,ret.y),ret.z);    
+    return vecmin(ret);    
 }
 
 // ----------------------------
@@ -173,7 +177,7 @@ void main() {
     float t,t2,rho,	
           m = max(dot(d,MOONDIR),0),
           dist = 1.4 - 200*(1-m*m);    
-    col = vec3(.02,.02,.05)*exp2(-d.y)+             // sky color, darkens slighty towards space
+    col = vec3(.02,.02,.04)*exp2(-d.y)+             // sky color, darkens slighty towards space
         smoothstep(0.,.1,dist)*(1-dist*rnoise(d*47))+     // moon
         pow(m,4.)*.05+                              // moon glow        
         syncs[SKYFLASH];                            // flashing sky (bombs falling at distance)
@@ -188,21 +192,22 @@ void main() {
 
     // march the map and plane          
     for (int i=0;i<200&&t<200;i++)
-        if (mat=map(p),t+=dist=min(min(mat.x,mat.y),mat.z),p+=d*dist,dist<.001*t) {                                            
+        if (mat=map(p),t+=dist=vecmin(mat),p+=d*dist,dist<.001*t) {                                            
             // materials
             vec3 normal = normalize(bumpmap(p)-vec3(bumpmap(p-N.xyy),bumpmap(p-N.yxy),bumpmap(p-N.yyx)));
+            vec3 normal2 = normalize(vecmin(map(p))-vec3(vecmin(map(p-N.xyy)),vecmin(map(p-N.yxy)),vecmin(map(p-N.yyx))));
             vec3 spec = vec3(0);
             dist==mat.y?(spec=vec3(.05),diff=.01):
             dist==mat.z?(spec=vec3(.2,.2,.22)*clamp(mat.x,0,1),fres=.2):
-            (diff=.01*clamp(mat.z,0,1));            
+            (m=smoothstep(0.,.3,p.y+rnoise(p*5)*.5-1.1),normal=mix(normal,normal2,m/2),diff=.01*clamp(mat.z,0,1)+m*.015);            
             col = mix(
                 FOG_COLOR,
-                diff*max(dot(normal,MOONDIR),0)+(                       // diffuse light
+                diff*max(dot(normal,MOONDIR),0)*smoothstep(.1,.2,max(dot(normal2,MOONDIR),0))+(                       // diffuse light
                     fres*pow(1-abs(dot(d,normal)),9.)+                  // fresnel
                     pow(max(dot(normal,normalize(MOONDIR-d)),0),200.)   // specular
                 )*spec,
                 exp2(-t*.02-exp2(-p.y-1)) // fog based on march distance & a bit more fog at low levels
-            )*smoothstep(1.5,0.,cloudmap(p+MOONDIR*12)); // shadows from clouds
+            )*smoothstep(2.,0.,cloudmap(p+MOONDIR*12)); // shadows from clouds
             break;
         }
         
