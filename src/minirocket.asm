@@ -27,13 +27,13 @@ _minirocket_sync@8:
     jb     .nextkey             ;   goto .key;
 .key:
     fdivp   st1, st0            ; a=(t-t0)/d
-    test    byte [type_data+edx+ebx-row_data], 1
+    test    byte [value_data+edx*2+ebx-row_data], 1
     jnz		.out
     fldz            ; 0 a
     fstp    st1     ; a
 .out:
     fild    word [value_data+edx*2+ebx-row_data]    ; v0*256 a
-    fidiv   word [ebx]           ; v0 a   % WARNING: we assume type data starts with 0x00 0x01 aka word 256... this is not universally true but for this intro it is
+    fidiv   word [ebx]           ; v0 a   % WARNING: we assume row data starts with 0x00 0x01 aka word 256... this is not universally true but for this intro it is
     fild    word [value_data+edx*2+2+ebx-row_data]  ; v1*256 v0 a
     fidiv   word [ebx]           ; v1 v0 a
     fsub    st0, st1    ; v1-v0 v0 a
